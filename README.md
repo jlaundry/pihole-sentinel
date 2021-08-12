@@ -1,6 +1,8 @@
 # pihole-sentinel
 
-A simple Python script and cron task to push Pi-Hole's FTL query DB into Azure Sentinel.
+A simple Python script and cron task to push Pi-Hole's FTL query log into Azure Sentinel.
+
+It copies the FTL database to /tmp (otherwise Pi-Hole can stop writing while read operations are in progress), and transforms the queries to Azure Sentinel Information Model [(ASIM)](https://docs.microsoft.com/en-us/azure/sentinel/dns-normalization-schema). Processed logs appear in the `Normalized_CL` table in the Log Analytics workspace.
 
 ## Setup
 
