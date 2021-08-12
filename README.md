@@ -6,6 +6,7 @@ A simple Python script and cron task to push Pi-Hole's FTL query DB into Azure S
 
 You will need:
 
+- To run the below as the pihole user (or whatever user pihole runs as)
 - A working Sentinel instance
 - the Workspace ID and Secret Key that your Sentinel instance is attached to
 
@@ -20,6 +21,9 @@ pip install -r requirements.txt
 echo 'AZURE_WORKSPACE_ID = "cb0af8dc-e731-4e0e-8578-a439aebcec18"' > local_settings.py
 echo 'AZURE_SECRET_KEY = "Mjc1ZjFlNTYyjBiY2U5YjJjOTI3MzJkMjRkNTM4NmU2MmRkNWQwODAzYWQ0NzIyNzM3YzkyN2VmNmZiNDNkNA=="' >> local_settings.py
 
-echo '* * * * * root /opt/pihole-sentinel/cron.sh >> /var/log/pihole-sentinel.log 2>&1' > /etc/cron.d/pihole-sentinel
+touch /var/log/pihole-sentinel.log
+chown pihole:pihole /var/log/pihole-sentinel.log
+
+echo '* * * * * pihole /opt/pihole-sentinel/cron.sh >> /var/log/pihole-sentinel.log 2>&1' > /etc/cron.d/pihole-sentinel
 
 ```
