@@ -1,18 +1,13 @@
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
-import base64
 from datetime import datetime
-import hashlib
-import hmac
-import json
 import socket
 import sqlite3
 
-import requests
-
-from .local_settings import AZURE_CUSTOMER_ID, AZURE_SHARED_KEY
+from azure_log_analytics import LogAnalytics
+from local_settings import AZURE_WORKSPACE_ID, AZURE_SECRET_KEY
 
 DEVICE_HOSTNAME = socket.gethostname()
 DEVICE_IP6 = socket.getaddrinfo("www.google.com", 443, socket.AF_INET6)[0][4][0]
@@ -60,58 +55,7 @@ QUERY_STATUS = {
     14: "Success: Already forwarded, not forwarding again",
 }
 
-session = requests.Session()
-
-def build_signature(customer_id, shared_key, date, content_length, method, content_type, resource):
-    """Returns authorization header which will be used when sending data into Azure Log Analytics"""
-
-    x_headers = 'x-ms-date:' + date
-    string_to_hash = method + "\n" + str(content_length) + "\n" + content_type + "\n" + x_headers + "\n" + resource
-    bytes_to_hash = bytes(string_to_hash, encoding='utf-8')
-    decoded_key = base64.b64decode(shared_key)
-    encoded_hash = base64.b64encode(hmac.new(decoded_key, bytes_to_hash, digestmod=hashlib.sha256).digest()).decode()
-    authorization = f"SharedKey {customer_id}:{encoded_hash}"
-    logging.debug(authorization)
-    return authorization
-
-
-def post_data(customer_id, shared_key, body, log_type):
-    """Sends payload to Azure Log Analytics Workspace
-
-    Keyword arguments:
-    customer_id -- Workspace ID obtained from Advanced Settings
-    shared_key -- Authorization header, created using build_signature
-    body -- payload to send to Azure Log Analytics
-    log_type -- Azure Log Analytics table name
-    """
-
-    body = json.dumps(body)
-
-    method = 'POST'
-    content_type = 'application/json'
-    resource = '/api/logs'
-    rfc1123date = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
-    content_length = len(body)
-    signature = build_signature(customer_id, shared_key, rfc1123date, content_length, method, content_type, resource)
-
-    uri = 'https://' + customer_id + '.ods.opinsights.azure.com' + resource + '?api-version=2016-04-01'
-
-    headers = {
-        'content-type': content_type,
-        'Authorization': signature,
-        'Log-Type': log_type,
-        'x-ms-date': rfc1123date
-    }
-
-    logging.debug(headers)
-    logging.debug(body)
-    response = session.post(uri, data=body, headers=headers)
-    if (response.status_code >= 200 and response.status_code <= 299):
-        logging.debug(f"Accepted payload: {body}")
-    else:
-        logging.error(f"Unable to Write ({response.status_code}): {response.text}")
-        raise Exception(f"Unable to Write ({response.status_code}): {response.text}")
-
+sentinel = LogAnalytics(AZURE_WORKSPACE_ID, AZURE_SECRET_KEY)
 
 last_filename = '.pihole-latest'
 LAST_ID = 0
@@ -124,12 +68,15 @@ except FileNotFoundError:
 except ValueError:
     pass
 
+now = datetime.now().isoformat()
+logging.info(f"Starting at {now} from queries.id={LAST_ID}")
+
 def update_latest(rowid, force=False):
     global LAST_ID
     if rowid < LAST_ID + 100 and not force:
         return
 
-    print(f"Writing LAST_ID {rowid}")
+    logging.info(f"Writing LAST_ID {rowid}")
     with open(last_filename, 'w') as of:
         of.write(str(rowid))
     LAST_ID = rowid
@@ -164,8 +111,9 @@ for row in cur.execute('SELECT * FROM queries WHERE id >:id ORDER BY id', {"id":
     }
 
     logging.debug(record)
-    post_data(AZURE_CUSTOMER_ID, AZURE_SHARED_KEY, record, "Normalized")
+    sentinel.post(record, "Normalized")
     update_latest(row['id'])
 
 con.close()
 update_latest(row['id'], force=True)
+

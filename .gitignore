@@ -1,2 +1,4 @@
+.env
+.pihole-latest
 *.pyc
 local_settings.py
