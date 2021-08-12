@@ -12,7 +12,7 @@ You will need:
 ```bash
 
 cd /opt
-git clone github.com/jlaundry/pihole-sentinel.git
+git clone https://github.com/jlaundry/pihole-sentinel.git
 cd pihole-sentinel
 python3 -m venv .env
 source .env/bin/activate
