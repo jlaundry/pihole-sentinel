@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workspace": {
+            "type": "String"
+        }
+    },
+    "resources": [
+        {
+            "id": "[concat(resourceId('Microsoft.OperationalInsights/workspaces/providers', parameters('workspace'), 'Microsoft.SecurityInsights'),'/alertRules/7ca0e996-5c13-4dc1-b64c-a718e3b668bd')]",
+            "name": "[concat(parameters('workspace'),'/Microsoft.SecurityInsights/7ca0e996-5c13-4dc1-b64c-a718e3b668bd')]",
+            "type": "Microsoft.OperationalInsights/workspaces/providers/alertRules",
+            "kind": "Scheduled",
+            "apiVersion": "2021-10-01-preview",
+            "properties": {
+                "displayName": "Pi-Hole DNS failures",
+                "description": "",
+                "severity": "High",
+                "enabled": true,
+                "query": "Normalized_CL | where EventType_s == \"lookup\" and EventResult_s != \"Success\" ",
+                "queryFrequency": "PT5M",
+                "queryPeriod": "PT30M",
+                "triggerOperator": "GreaterThan",
+                "triggerThreshold": 0,
+                "suppressionDuration": "PT5H",
+                "suppressionEnabled": false,
+                "tactics": [],
+                "techniques": [],
+                "alertRuleTemplateName": null,
+                "incidentConfiguration": {
+                    "createIncident": true,
+                    "groupingConfiguration": {
+                        "enabled": true,
+                        "reopenClosedIncident": true,
+                        "lookbackDuration": "PT5H",
+                        "matchingMethod": "Selected",
+                        "groupByEntities": [
+                            "DNS"
+                        ],
+                        "groupByAlertDetails": [],
+                        "groupByCustomDetails": []
+                    }
+                },
+                "eventGroupingSettings": {
+                    "aggregationKind": "SingleAlert"
+                },
+                "alertDetailsOverride": null,
+                "customDetails": null,
+                "entityMappings": [
+                    {
+                        "entityType": "DNS",
+                        "fieldMappings": [
+                            {
+                                "identifier": "DomainName",
+                                "columnName": "DnsQuery_s"
+                            }
+                        ]
+                    },
+                    {
+                        "entityType": "IP",
+                        "fieldMappings": [
+                            {
+                                "identifier": "Address",
+                                "columnName": "SrcIpAddr_s"
+                            }
+                        ]
+                    }
+                ],
+                "sentinelEntitiesMappings": null
+            }
+        }
+    ]
+}
