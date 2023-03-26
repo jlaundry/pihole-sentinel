@@ -110,8 +110,9 @@ for row in cur.execute('SELECT * FROM queries WHERE id >:id ORDER BY id', {"id":
         "DnsResponseCodeName": "NA",
     }
 
+    log_type = "Normalized"
     logging.debug(record)
-    sentinel.post(record, "Normalized")
+    sentinel.post(log_type, record)
     update_latest(row['id'])
 
 con.close()
