@@ -37,22 +37,27 @@ QUERY_TYPES = {
     16: "HTTPS",
 }
 
+# https://docs.pi-hole.net/database/query-database/#supported-status-types
 QUERY_STATUS = {
     0: "Failure: Unknown status (not yet known)",
     1: "Failure: Domain contained in gravity database",
     2: "Success: Forwarded",
-    3: "Success: Known, replied to from cache",
-    4: "Failure: Domain matched by a regex blacklist filter",
-    5: "Failure: Domain contained in exact blacklist",
+    3: "Success: Replied from cache",
+    4: "Failure: Domain matched by a regex denylist filter",
+    5: "Failure: Domain contained in exact denylist",
     6: "Failure: By upstream server (known blocking page IP address)",
     7: "Failure: By upstream server (0.0.0.0 or ::)",
     8: "Failure: By upstream server (NXDOMAIN with RA bit unset)",
-    9: "Failure: Domain contained in gravity database",
-    10: "Failure: Domain matched by a regex blacklist filter",
-    11: "Failure: Domain contained in exact blacklist",
+    9: "Failure: Domain contained in gravity database (deep CNAME inspection)",
+    10: "Failure: Domain matched by a regex denylist filter (deep CNAME inspection)",
+    11: "Failure: Domain contained in exact denylist (deep CNAME inspection)",
     12: "Success: Retried query",
     13: "Success: Retried but ignored query (this may happen during ongoing DNSSEC validation)",
     14: "Success: Already forwarded, not forwarding again",
+    15: "Failure: Database is busy",
+    16: "Failure: Special domain",
+    17: "Success: Replied from stale cache",
+    18: "Failure: By upstream server (EDE 15)"
 }
 
 sentinel = LogAnalytics(AZURE_WORKSPACE_ID, AZURE_SECRET_KEY)
