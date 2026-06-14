@@ -18,7 +18,7 @@
                 "description": "",
                 "severity": "High",
                 "enabled": true,
-                "query": "Normalized_CL | where EventType_s == \"lookup\" and EventResult_s != \"Success\" ",
+                "query": "ASimDnsActivityLogs | where EventType == \"Query\" and EventResult != \"Success\" ",
                 "queryFrequency": "PT5M",
                 "queryPeriod": "PT30M",
                 "triggerOperator": "GreaterThan",
